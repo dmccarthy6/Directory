@@ -8,16 +8,14 @@ import Foundation
 protocol API {
     var session: URLSession { get }
     
-    func fetchData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping (Result<T, APIError>) -> Void)
-    
+    func fetchNetworkData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping (Result<T, APIError>) -> Void)
 }
-
 
 extension API {
     typealias JSONTaskCompletionHandler = (Decodable?, APIError?) -> Void
     
     //MARK: - Decode JSON
-    private func decodingTask<T: Decodable>(with request: URLRequest,
+    private func decodeJSON<T: Decodable>(with request: URLRequest,
                                             decodingType: T.Type,
                                             completionHandler completion: @escaping JSONTaskCompletionHandler) -> URLSessionDataTask {
         
@@ -69,8 +67,8 @@ extension API {
     }
     
     //MARK: - Fetch Data Implementation
-    func fetchData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping (Result<T, APIError>) -> Void) {
-        let task = decodingTask(with: request, decodingType: T.self) { (JSON, APIError) in
+    func fetchNetworkData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping (Result<T, APIError>) -> Void) {
+        let task = decodeJSON(with: request, decodingType: T.self) { (JSON, APIError) in
             //MAIN QUEUE
             DispatchQueue.main.async {
                 guard let json = JSON else {

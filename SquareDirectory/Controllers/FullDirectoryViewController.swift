@@ -29,33 +29,31 @@ final class FullDirectoryViewController: UIViewController {
         label.isHidden = true
         return label
     }()
-    
     private var employeeData = [Contact]()
-    private let directory = GetDirectory()
-    private let images = FetchImages()
+    private let directoryAPI = GetDirectoryData()
+    private let imageAPI = FetchImages()
     
     
     
     //MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        activityIndicator().startAnimating()
         setupView()
-        
         //Perform API Request
         performDirectoryRequest()
     }
+    
     
     //MARK: - Helpers
     private func setupView() {
         view.addSubview(activityIndicator())
         view.addSubview(tableView)
         view.addSubview(errorLabel)
-        
         navigationItem.title = "Employee Directory"
     }
+    
     //Create activity indicator
-    func activityIndicator() -> UIActivityIndicatorView {
+    private func activityIndicator() -> UIActivityIndicatorView {
         let indicator = ActivityIndicator.displayActivityIndicator(with: view.centerXAnchor,
                                                                    yAnchor: view.centerYAnchor,
                                                                    inView: view)
@@ -63,15 +61,15 @@ final class FullDirectoryViewController: UIViewController {
         return indicator
     }
    
-    
     //Perform Fetch of employees from directory
     private func performDirectoryRequest() {
-        directory.fetchDirectoryNames(from: .directoryURL) { [unowned self] (result) in
+        activityIndicator().startAnimating()
+        directoryAPI.fetchDirectoryNames(from: .validData) { [unowned self] (result) in
             switch result {
             case .success(let contact):
                 guard let contactResults = contact else { return }
                 self.handleNoDataErrorLabel(data: contactResults.employees)
-                self.employeeData = contactResults.employees!
+                self.employeeData = self.sortedDataByTeam(directoryEmployees: contactResults)
                 self.activityIndicator().stopAnimating()
                 self.tableView.reloadData()
                 
@@ -84,18 +82,25 @@ final class FullDirectoryViewController: UIViewController {
         }
     }
     
+    //Sort data by team
+    func sortedDataByTeam(directoryEmployees: EmployeesResult) -> [Contact] {
+        guard let employeeDataArray = directoryEmployees.employees else { return employeeData }
+        let sortedEmployeeArray = employeeDataArray.sorted(by: { $0.team < $1.team })
+        return sortedEmployeeArray
+    }
+    
     //Handle Error Labels
     private func handleNoDataErrorLabel(data: [Contact]?) {
         if let contactData = data {
             if contactData.count == 0 {
-                self.errorLabel.text = "Uh Oh! Something went wrong looks like the data is empty. Please try again"
+                self.errorLabel.text = ErrorLabelText.noData.text
                 self.errorLabel.isHidden = false
             }
         }
     }
     
     private func handleErrorFetchingLabel() {
-        self.errorLabel.text = "Uh Oh! Something went wrong fetching data. Please try again"
+        self.errorLabel.text = ErrorLabelText.errorFetchingData.text
         self.errorLabel.isHidden = false
     }
 
@@ -113,11 +118,13 @@ extension FullDirectoryViewController: UITableViewDataSource {
         
         let data = employeeData[indexPath.row]
         
-        //TO-DO: Is this the right place for this image call? 
-        images.getImage(from: data.photoSmall) { (result) in
+        //TO-DO: Is this the right place for this image async call? This feels expensive and like there's a better place for it, but where?
+        imageAPI.getImage(from: data.photoSmall) { (result) in
             switch result {
             case .failure(let error):
-                print(error)
+                DispatchQueue.main.async {
+                    Alerts.showAlert(title: "Error", message: "Error fetching thumbnail image \(error)")
+                }
             case .success(let image):
                 DispatchQueue.main.async {
                     cell.setImage(image)
@@ -135,19 +142,12 @@ extension FullDirectoryViewController: UITableViewDataSource {
 extension FullDirectoryViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        //Sorting
-        let label = UILabel()
-        label.text = "Header for sorting"
-        label.backgroundColor = .systemBackground
-        label.font = .preferredFont(for: .headline, weight: .medium)
-        return label
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        return view
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 30
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //let itemAtIndex = tableView.cell
+        return 20
     }
 }

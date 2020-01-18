@@ -27,7 +27,7 @@ final class PersonCell: UITableViewCell {
     private let employeeTeamLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
-        label.textColor = .systemGray2
+        label.textColor = .systemGray
         label.font = .preferredFont(for: .headline, weight: .heavy)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -108,6 +108,8 @@ final class PersonCell: UITableViewCell {
             thumbNailPhotoIV.tintColor = .lightGray
         }
     }
+    
+    
     
     
 }

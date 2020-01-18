@@ -6,7 +6,7 @@
 import Foundation
 
 enum DirectoryURL {
-    case directoryURL
+    case validData
     case malformed
     case empty
 }
@@ -20,7 +20,7 @@ extension DirectoryURL: Endpoint {
     }
     var path: String {
         switch self {
-        case .directoryURL:     return "/sq-mobile-interview/employees.json"
+        case .validData:     return "/sq-mobile-interview/employees.json"
         case .malformed:        return "/sq-mobile-interview/employees_malformed.json"
         case .empty:            return "/sq-mobile-interview/employees_empty.json"
         }

@@ -1,7 +1,4 @@
-//
-//  FetchLargeImages.swift
-//  SquareDirectory
-//
+
 //  Created by Dylan  on 1/17/20.
 //  Copyright © 2020 Dylan . All rights reserved.
 //
@@ -27,7 +24,7 @@ struct FetchImages: API {
     
     
     
-    //MARK: - Functions
+    //MARK: - Get Images from Server or Cache
     /* Fetches images with caching*/
     func getImage(from url: URL, completionHandler completion: @escaping (Result<UIImage, APIError>) -> Void) {
         let urlKey = String(describing: url)
