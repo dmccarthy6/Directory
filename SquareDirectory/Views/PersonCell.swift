@@ -53,40 +53,29 @@ final class PersonCell: UITableViewCell {
         contentView.addSubview(employeeNameLabel)
         contentView.addSubview(employeeTeamLabel)
         
+        let guide = contentView.layoutMarginsGuide
+        
         NSLayoutConstraint.activate([
             //Layout Photo
-            thumbNailPhotoIV.centerYAnchor.constraint(equalTo: safeAreaLayoutGuide.centerYAnchor),
+            thumbNailPhotoIV.centerYAnchor.constraint(equalTo: guide.centerYAnchor),
             thumbNailPhotoIV.widthAnchor.constraint(equalToConstant: 45),
             thumbNailPhotoIV.heightAnchor.constraint(equalTo: thumbNailPhotoIV.widthAnchor),
-            thumbNailPhotoIV.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
-//            thumbNailPhotoIV.trailingAnchor.constraint(equalToSystemSpacingAfter: employeeNameLabel.leadingAnchor,
-//                                                       multiplier: 2),
+            thumbNailPhotoIV.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
 
             //Layout Employee Name
-            employeeNameLabel.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            employeeNameLabel.topAnchor.constraint(equalTo: guide.topAnchor),
             employeeNameLabel.bottomAnchor.constraint(equalTo: employeeTeamLabel.topAnchor), //
             employeeNameLabel.leadingAnchor.constraint(equalToSystemSpacingAfter: thumbNailPhotoIV.trailingAnchor,
                                                        multiplier: 2),
-//            employeeNameLabel.trailingAnchor.constraint(equalToSystemSpacingAfter: safeAreaLayoutGuide.trailingAnchor,
-//                                                        multiplier: 10),
-//            employeeNameLabel.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
-            employeeNameLabel.heightAnchor.constraint(equalToConstant: contentView.frame.size.height/2),
-            employeeNameLabel.widthAnchor.constraint(equalToConstant: contentView.frame.size.width),
             
             //Layout Employee Team
             employeeTeamLabel.topAnchor.constraint(equalTo: employeeNameLabel.bottomAnchor),
-            employeeTeamLabel.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
+            employeeTeamLabel.bottomAnchor.constraint(equalTo: guide.bottomAnchor),
             employeeTeamLabel.leadingAnchor.constraint(equalToSystemSpacingAfter: thumbNailPhotoIV.trailingAnchor,
                                                        multiplier: 2),
-            employeeTeamLabel.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
-            employeeTeamLabel.heightAnchor.constraint(equalToConstant: contentView.frame.size.height/2),
-            employeeTeamLabel.widthAnchor.constraint(equalToConstant: contentView.frame.size.width)
+            employeeTeamLabel.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
         ])
         
-        
-        //TO-DO: Fix or remove, tryign to get the cell height to be dynamic.
-        let height: CGFloat = 200
-        heightAnchor.constraint(equalToConstant: height).isActive = true
     }
     
     //MARK: - Interface Methods
@@ -108,8 +97,5 @@ final class PersonCell: UITableViewCell {
             thumbNailPhotoIV.tintColor = .lightGray
         }
     }
-    
-    
-    
     
 }

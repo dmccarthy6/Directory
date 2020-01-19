@@ -9,7 +9,6 @@ import UIKit
 struct GetDirectoryData: API {
     //MARK: - Properties
     var session: URLSession
-    private let cache = Cache<String, UIImage>()
     
     
     

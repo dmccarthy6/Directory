@@ -21,10 +21,6 @@ extension API {
         
         let task = session.dataTask(with: request) { (data, urlResponse, error) in
             guard let httpResponse = urlResponse as? HTTPURLResponse else {
-                DispatchQueue.main.async {
-                    Alerts.showAlert(title: "Error",
-                                     message: "Http Request failed: \(APIError.requestFailed)")
-                }
                 completion(nil, .requestFailed)
                 return
             }
@@ -38,28 +34,16 @@ extension API {
                     }
                     catch {
                         //Failed to convert JSON
-                        DispatchQueue.main.async {
-                            Alerts.showAlert(title: "Error",
-                                             message: "Something went wrong. Please try again. \(APIError.jsonConversionFailure)")
-                        }
                         completion(nil, .jsonConversionFailure)
                     }
                 }
                 else {
                     //Data is NIL
-                    DispatchQueue.main.async {
-                        Alerts.showAlert(title: "Error",
-                                         message: "No data received: \(APIError.invalidData)")
-                    }
                     completion(nil, .invalidData)
                 }
             }
             else {
                 //Not Successful HTTP Response
-                DispatchQueue.main.async {
-                    Alerts.showAlert(title: "Error",
-                                     message: "Check your internet connection: \(APIError.responseUnsuccessful)")
-                }
                 completion(nil, .responseUnsuccessful)
             }
         }

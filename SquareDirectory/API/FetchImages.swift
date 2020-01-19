@@ -10,9 +10,7 @@ struct FetchImages: API {
     
     //MARK: - Properties
     var session: URLSession
-    private let cache = Cache<String, UIImage>()
-    
-    
+    private let cache = NSCache<NSString,UIImage>()
     
     
     //MARK: - Initializer
@@ -30,7 +28,7 @@ struct FetchImages: API {
         let urlKey = String(describing: url)
         
         //Check cache for image, if it exists in cache, use it.
-        if let cachedImage = cache[urlKey] {
+        if let cachedImage = cache.object(forKey: urlKey as NSString) {
             print("CACHED")
             return completion(.success(cachedImage))
         }
@@ -51,7 +49,8 @@ struct FetchImages: API {
     //MARK: - Helpers
     private func cacheImage(urlKey: String, imageData: Data) {
         if let image = UIImage(data: imageData) {
-            self.cache.insert(image, forKey: urlKey)
+            let keyAsNSString = urlKey as NSString
+            self.cache.setObject(image, forKey: keyAsNSString)
         }
     }
     

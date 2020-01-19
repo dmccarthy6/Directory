@@ -22,7 +22,7 @@ enum APIError: Error {
         case .invalidData:                  return "Invalid Data"
         case .responseUnsuccessful:          return "Response Unsuccessful"
         case .jsonParsingFailure:            return "JSON Parsing Failure"
-        case .jsonConversionFailure:         return "JSON Conversion Failure"
+        case .jsonConversionFailure:         return "Failed to properly convert JSON data from server"
         }
     }
     

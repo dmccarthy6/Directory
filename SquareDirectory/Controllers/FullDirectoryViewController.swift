@@ -76,8 +76,16 @@ final class FullDirectoryViewController: UIViewController {
             case .failure(let error):
                 /* Showing Error Label Here, if Data isn't fetched label shows on UI*/
                 self.activityIndicator().stopAnimating()
-                self.handleErrorFetchingLabel()
-                print(error)
+                
+                DispatchQueue.main.async {
+                    self.handleErrorFetchingLabel()
+                    if error == .responseUnsuccessful {
+                        //HTTP Response Error (not 200)
+                        Alerts.showAlert(title: "HTTP Error", message: "Check Internet Connection. Could not connect to server.")
+                    }
+                    //JSON parsing or empty data error
+                    Alerts.showAlert(title: "Error", message: "Error fetching data: \(error)")
+                }
             }
         }
     }
