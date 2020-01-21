@@ -9,7 +9,7 @@ enum Alerts {
     
     
     static func showAlert(title: String?, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
         
         let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         
