@@ -60,6 +60,31 @@ class NetworkTests: XCTestCase {
         XCTAssertNil(employeeResultData)
     }
     
+    func testFetchData() {
+        let validDataExpectation = expectation(description: "Check Valid Directory")
+        let url = DirectoryURL.validData.urlComponents.url
+        URLProtocolMock.testURLs = [url : Data("Data is valid".utf8)]
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [URLProtocolMock.self]
+        let session = URLSession(configuration: config)
+        typealias completionHandler = (EmployeesResult, APIError) -> Void
+        
+        let directory = GetDirectoryData(session: session)
+       
+        directory.fetchNetworkData(with: DirectoryURL.validData.urlRequest, decode: { (json) -> EmployeesResult? in
+            if let employeeJson = json as? EmployeesResult {
+                print("HIT JSON VALID IN TEST")
+                XCTAssertNotNil(employeeJson)
+                return employeeJson
+            }
+            validDataExpectation.fulfill()
+            return nil
+            
+        }) { (result) in
+            print(result)
+        }
+    }
+    
     /* Test that nil error is firing correctly on empty data endpoint*/
     func testDirectoryNilDataError() {
         let nilAPIError = APIError.jsonDataMalformed

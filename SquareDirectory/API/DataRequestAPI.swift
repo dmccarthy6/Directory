@@ -50,7 +50,7 @@ extension API {
     }
     
     //MARK: - Fetch Data Implementation
-    func fetchNetworkData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping (Result<T, APIError>) -> Void) {
+    func fetchNetworkData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping ((Result<T, APIError>)) -> Void) {
         let task = decodeJSON(with: request, decodingType: T.self) { (JSON, APIError) in
             //MAIN QUEUE
             DispatchQueue.main.async {
