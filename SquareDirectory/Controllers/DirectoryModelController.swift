@@ -6,7 +6,7 @@
 import Foundation
 import UIKit
 
-class ModelController {
+final class ModelController {
     
     //MARK: - Properties
     private (set) var directoryData = [Contact]() {

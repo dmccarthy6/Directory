@@ -44,6 +44,7 @@ class NetworkTests: XCTestCase {
         XCTAssert(dataTask.resumeWasCalled)
     }
     
+    /* */
     func testGettingData() {
         var employeeResultData: EmployeesResult?
         
@@ -57,10 +58,10 @@ class NetworkTests: XCTestCase {
             }
         }
         XCTAssertNil(employeeResultData)
-        //        XCTAssertNotNil(employeeResultData)
     }
     
-    func testDirectoryWithNilData() {
+    /* Test that nil error is firing correctly on empty data endpoint*/
+    func testDirectoryNilDataError() {
         let nilAPIError = APIError.jsonDataMalformed
         var errorNil: APIError?
         
@@ -99,23 +100,7 @@ class NetworkTests: XCTestCase {
 //        waitForExpectations(timeout: 5, handler: nil)
 //        XCTAssert(contactsArray!.count > 0, "Something's wrong, there are no employees in the directory")
 //    }
-    //        func testImageAPI() {
-    //            let imageURL = URL(string: "https://s3.amazonaws.com/sq-mobile-interview/photos/16c00560-6dd3-4af4-97a6-d4754e7f2394/small.jpg")
-    //            var image: UIImage?
-    //            let expectation = self.expectation(description: "Image")
-    //
-    //            fetchImages.getImage(from: imageURL!) { (result) in
-    //                switch result {
-    //                case .success(let downloadedImage):
-    //                    image = downloadedImage
-    //                    expectation.fulfill()
-    //                case .failure(let apiError):
-    //                    print(apiError)
-    //                }
-    //            }
-    //            waitForExpectations(timeout: 5, handler: nil)
-    //            XCTAssertNotEqual(image, nil)
-    //        }
+    
     
     //MARK: - Teardown
     override func tearDown() {

@@ -7,7 +7,7 @@ import Foundation
 import UIKit
 
 
-class ImageLoader: API {
+final class ImageLoader: API {
     
     //MARK: - Properties
     var session: URLSession

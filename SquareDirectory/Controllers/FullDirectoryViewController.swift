@@ -56,7 +56,7 @@ final class FullDirectoryViewController: UIViewController {
                 }
                 else {
                     self.handleErrorFetchingLabel()
-                    Alerts.showAlert(title: "Other Error", message: "JSON Error")
+                    Alerts.showAlert(title: "JSON Error", message: "JSON data is corrupted. Please try again.")
                 }
             }
             if self.modelController.directoryData.count < 1 {
