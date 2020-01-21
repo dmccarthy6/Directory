@@ -1,7 +1,4 @@
-//
-//  APIErrorEnum.swift
-//  SquareDirectory
-//
+
 //  Created by Dylan  on 1/16/20.
 //  Copyright © 2020 Dylan . All rights reserved.
 //
@@ -10,19 +7,29 @@ import Foundation
 
 enum APIError: Error {
     
-    case requestFailed
+    case httpRequestFailed
+    case httpResponseUnsuccessful
     case jsonConversionFailure
-    case invalidData
-    case responseUnsuccessful
+    case jsonDataMalformed
     case jsonParsingFailure
+    case imageFailedToLoad
+    case handleNoData
+    
     
     var localizedDescription: String {
         switch self {
-        case .requestFailed:                return "Request Failed"
-        case .invalidData:                  return "Invalid Data"
-        case .responseUnsuccessful:          return "Response Unsuccessful"
+        //HTTP Errors
+        case .httpRequestFailed:                return "No response from server. Check internet connection."
+        case .httpResponseUnsuccessful:         return "Response Unsuccessful"
+            
+        //JSON Errors
+        case .jsonDataMalformed:             return "JSON data is invalid."
         case .jsonParsingFailure:            return "JSON Parsing Failure"
         case .jsonConversionFailure:         return "Failed to properly convert JSON data from server"
+        
+        //
+        case .imageFailedToLoad:            return "Image failed to load"
+        case .handleNoData:                 return "No Data"
         }
     }
     

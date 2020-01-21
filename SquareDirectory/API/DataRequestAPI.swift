@@ -15,13 +15,12 @@ extension API {
     typealias JSONTaskCompletionHandler = (Decodable?, APIError?) -> Void
     
     //MARK: - Decode JSON
-    private func decodeJSON<T: Decodable>(with request: URLRequest,
-                                            decodingType: T.Type,
-                                            completionHandler completion: @escaping JSONTaskCompletionHandler) -> URLSessionDataTask {
+    
+    private func decodeJSON<T: Decodable>(with request: URLRequest, decodingType: T.Type, completionHandler completion: @escaping JSONTaskCompletionHandler) -> URLSessionDataTask {
         
         let task = session.dataTask(with: request) { (data, urlResponse, error) in
             guard let httpResponse = urlResponse as? HTTPURLResponse else {
-                completion(nil, .requestFailed)
+                completion(nil, .httpRequestFailed)
                 return
             }
             
@@ -39,12 +38,12 @@ extension API {
                 }
                 else {
                     //Data is NIL
-                    completion(nil, .invalidData)
+                    completion(nil, .handleNoData)
                 }
             }
             else {
-                //Not Successful HTTP Response
-                completion(nil, .responseUnsuccessful)
+                //HTTP Response not 200
+                completion(nil, .httpResponseUnsuccessful)
             }
         }
         return task
@@ -60,7 +59,7 @@ extension API {
                         completion(Result.failure(apiError))
                     }
                     else {
-                        completion(Result.failure(.invalidData))
+                        completion(Result.failure(.jsonDataMalformed))
                     }
                     return
                 }
@@ -69,7 +68,6 @@ extension API {
                 }
                 else {
                     completion(.failure(.jsonParsingFailure))
-                    
                 }
             }
         }
@@ -80,11 +78,11 @@ extension API {
     func getImageData(from url: URL, completion: @escaping (Result<Data?, APIError>) -> Void) {
         let imageTask = session.dataTask(with: url) { (imageData, response, error) in
             if let _ = error {
-                completion(.failure(.requestFailed))
+                completion(.failure(.httpRequestFailed))
                 return
             }
             guard let imageData = imageData else {
-                completion(.failure(.invalidData))
+                completion(.failure(.jsonDataMalformed))
                 return
             }
             completion(.success(imageData))
@@ -100,7 +98,7 @@ extension API {
                 }
             }
             else {
-                completion(.failure(APIError.invalidData))
+                completion(.failure(APIError.jsonDataMalformed))
             }
         }
     }

@@ -12,6 +12,8 @@ final class PersonCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(systemName: "person.crop.circle.fill")
+        imageView.tintColor = .darkGray
         return imageView
     }()
     
@@ -32,8 +34,8 @@ final class PersonCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    var onReuse: () -> Void = {}
     
-    private var heightConstraint: NSLayoutConstraint!
     
     //MARK: - Initializers
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -46,6 +48,11 @@ final class PersonCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onReuse()
+        thumbNailPhotoIV.image = nil
+    }
     
     //MARK: - Helpers
     private func setupCell() {
@@ -57,22 +64,20 @@ final class PersonCell: UITableViewCell {
         
         NSLayoutConstraint.activate([
             //Layout Photo
-            thumbNailPhotoIV.centerYAnchor.constraint(equalTo: guide.centerYAnchor),
-            thumbNailPhotoIV.widthAnchor.constraint(equalToConstant: 45),
-            thumbNailPhotoIV.heightAnchor.constraint(equalTo: thumbNailPhotoIV.widthAnchor),
             thumbNailPhotoIV.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
-
+            thumbNailPhotoIV.centerYAnchor.constraint(equalTo: guide.centerYAnchor),
+            thumbNailPhotoIV.widthAnchor.constraint(equalToConstant: 55),
+            thumbNailPhotoIV.heightAnchor.constraint(equalTo: thumbNailPhotoIV.widthAnchor),
+            
             //Layout Employee Name
             employeeNameLabel.topAnchor.constraint(equalTo: guide.topAnchor),
-            employeeNameLabel.bottomAnchor.constraint(equalTo: employeeTeamLabel.topAnchor), //
-            employeeNameLabel.leadingAnchor.constraint(equalToSystemSpacingAfter: thumbNailPhotoIV.trailingAnchor,
-                                                       multiplier: 2),
+            employeeNameLabel.bottomAnchor.constraint(equalTo: employeeTeamLabel.topAnchor),
+            employeeNameLabel.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+            employeeNameLabel.leadingAnchor.constraint(equalToSystemSpacingAfter: thumbNailPhotoIV.trailingAnchor,multiplier: 2),
             
             //Layout Employee Team
-            employeeTeamLabel.topAnchor.constraint(equalTo: employeeNameLabel.bottomAnchor),
             employeeTeamLabel.bottomAnchor.constraint(equalTo: guide.bottomAnchor),
-            employeeTeamLabel.leadingAnchor.constraint(equalToSystemSpacingAfter: thumbNailPhotoIV.trailingAnchor,
-                                                       multiplier: 2),
+            employeeTeamLabel.leadingAnchor.constraint(equalTo: employeeNameLabel.leadingAnchor),
             employeeTeamLabel.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
         ])
         
@@ -91,10 +96,6 @@ final class PersonCell: UITableViewCell {
             self.thumbNailPhotoIV.layer.cornerRadius = imageRadius
             self.thumbNailPhotoIV.layer.masksToBounds = true
             self.thumbNailPhotoIV.image = image
-        }
-        else {
-            thumbNailPhotoIV.image = UIImage(systemName: "person.crop.circle.fill")
-            thumbNailPhotoIV.tintColor = .lightGray
         }
     }
     

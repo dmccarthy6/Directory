@@ -6,17 +6,13 @@
 import UIKit
 
 final class FullDirectoryViewController: UIViewController {
-
+    
     //MARK: - Properties
     lazy private var tableView: UITableView = {
         let tableView = UITableView(frame: view.frame)
         tableView.backgroundColor = .systemBackground
         tableView.dataSource = self
         tableView.delegate = self
-        
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 200//UITableView.automaticDimension
-        
         tableView.registerTableViewCell(cellClass: PersonCell.self)
         return tableView
     }()
@@ -29,18 +25,17 @@ final class FullDirectoryViewController: UIViewController {
         label.isHidden = true
         return label
     }()
-    private var employeeData = [Contact]()
-    private let directoryAPI = GetDirectoryData()
-    private let imageAPI = FetchImages()
-    
+    let modelController = ModelController()
+    let imageLoader = ImageLoader()
     
     
     //MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        
         //Perform API Request
-        performDirectoryRequest()
+        makeNetworkCall()
     }
     
     
@@ -52,52 +47,33 @@ final class FullDirectoryViewController: UIViewController {
         navigationItem.title = "Employee Directory"
     }
     
-    //Create activity indicator
-    private func activityIndicator() -> UIActivityIndicatorView {
-        let indicator = ActivityIndicator.displayActivityIndicator(with: view.centerXAnchor,
-                                                                   yAnchor: view.centerYAnchor,
-                                                                   inView: view)
-        indicator.backgroundColor = .darkGray
-        return indicator
-    }
-   
-    //Perform Fetch of employees from directory
-    private func performDirectoryRequest() {
+    func makeNetworkCall() {
         activityIndicator().startAnimating()
-        directoryAPI.fetchDirectoryNames(from: .validData) { [unowned self] (result) in
-            switch result {
-            case .success(let contact):
-                guard let contactResults = contact else { return }
-                self.handleNoDataErrorLabel(data: contactResults.employees)
-                self.employeeData = self.sortedDataByTeam(directoryEmployees: contactResults)
-                self.activityIndicator().stopAnimating()
-                self.tableView.reloadData()
-                
-            case .failure(let error):
-                /* Showing Error Label Here, if Data isn't fetched label shows on UI*/
-                self.activityIndicator().stopAnimating()
-                
-                DispatchQueue.main.async {
+        modelController.getNetowrkData { [unowned self] (error) in
+            if let apiError = error {
+                if apiError == .httpRequestFailed {
+                    Alerts.showAlert(title: "Http Error", message: "Check your internet connection. Could not connect to server")
+                }
+                else {
                     self.handleErrorFetchingLabel()
-                    if error == .responseUnsuccessful {
-                        //HTTP Response Error (not 200)
-                        Alerts.showAlert(title: "HTTP Error", message: "Check Internet Connection. Could not connect to server.")
-                    }
-                    //JSON parsing or empty data error
-                    Alerts.showAlert(title: "Error", message: "Error fetching data: \(error)")
+                    Alerts.showAlert(title: "Other Error", message: "JSON Error")
                 }
             }
+            if self.modelController.directoryData.count < 1 {
+                self.handleNoDataErrorLabel(data: self.modelController.directoryData)
+            }
+            self.tableView.reloadData()
         }
+        activityIndicator().stopAnimating()
     }
     
-    //Sort data by team
-    func sortedDataByTeam(directoryEmployees: EmployeesResult) -> [Contact] {
-        guard let employeeDataArray = directoryEmployees.employees else { return employeeData }
-        let sortedEmployeeArray = employeeDataArray.sorted(by: { $0.team < $1.team })
-        return sortedEmployeeArray
+    //MARK - UI Methods
+    //Create activity indicator
+    private func activityIndicator() -> UIActivityIndicatorView {
+        let indicator = ActivityIndicator.displayActivityIndicator(with: view.centerXAnchor, yAnchor: view.centerYAnchor, inView: view)
+        return indicator
     }
-    
-    //Handle Error Labels
+    //Handle No Data OR Malformed data error labels.
     private func handleNoDataErrorLabel(data: [Contact]?) {
         if let contactData = data {
             if contactData.count == 0 {
@@ -111,36 +87,33 @@ final class FullDirectoryViewController: UIViewController {
         self.errorLabel.text = ErrorLabelText.errorFetchingData.text
         self.errorLabel.isHidden = false
     }
-
 }
 
 //MARK: - UITableView Data Source Methods
 extension FullDirectoryViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return employeeData.count
+        return modelController.directoryData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: PersonCell = tableView.dequeueReusableCell(for: indexPath)
         
-        let data = employeeData[indexPath.row]
-        
-        //TO-DO: Is this the right place for this image async call? This feels expensive and like there's a better place for it, but where?
-        imageAPI.getImage(from: data.photoSmall) { (result) in
-            switch result {
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    Alerts.showAlert(title: "Error", message: "Error fetching thumbnail image \(error)")
-                }
-            case .success(let image):
-                DispatchQueue.main.async {
-                    cell.setImage(image)
-                }
-            }
-        }
+        let data = modelController.directoryData[indexPath.row]
+        let thumbnailImageURL = data.photoSmall
         
         cell.configure(employeeName: data.fullName, employeeTeam: data.team)
+
+        let token = modelController.loadImageFor(cell: cell, url: thumbnailImageURL, uuid: data.uuid) { (apiError) in
+            DispatchQueue.main.async {
+                Alerts.showAlert(title: "Image Alert", message: "Error loading images: \(APIError.imageFailedToLoad)")
+            }
+        }
+        cell.onReuse = {
+            if let token = token {
+                self.imageLoader.cancelLoad(for: token, uuid: data.uuid)
+            }
+        }
         return cell
     }
     
@@ -149,13 +122,6 @@ extension FullDirectoryViewController: UITableViewDataSource {
 //MARK: - UITableView Delegate Methods
 extension FullDirectoryViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = UIView()
-        view.backgroundColor = .systemBackground
-        return view
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 20
-    }
+    
+    
 }
