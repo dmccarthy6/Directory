@@ -31,7 +31,6 @@ final class ModelController: API {
     
     
     //MARK: - Network Functions
-    /* */
     func getDirectoryEmployees(from url: DirectoryURL, completion: @escaping (APIError?) -> Void) {
         fetchEmployeesFromNetwork(from: url) { (result) in
             switch result {
@@ -61,7 +60,7 @@ final class ModelController: API {
         return token
     }
     
-    /* Cancel the load image*/
+    /* Cancel the load image; used when cell is dequeueing. */
     func cancelImageLoad(token: String, uuid: String) {
         imageLoader.cancelLoad(for: token, uuid: uuid)
     }

@@ -9,7 +9,7 @@ class DirectoryViewController: UIViewController {
     
     //MARK: - Properties
     lazy private var tableView: UITableView = {
-        let tableView = UITableView(frame: view.frame, style: .plain)
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .systemBackground
         tableView.dataSource = self
@@ -18,7 +18,8 @@ class DirectoryViewController: UIViewController {
         return tableView
     }()
     lazy private var errorLabel: UILabel = {
-        let label = UILabel(frame: view.frame)
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
         label.backgroundColor = .secondarySystemBackground
         label.font = .preferredFont(for: .body, weight: .medium)
@@ -34,7 +35,6 @@ class DirectoryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
         setupLayout()
         makeDirectoryNetworkCall()
     }
@@ -44,12 +44,17 @@ class DirectoryViewController: UIViewController {
     private func setupLayout() {
         view.addSubview(tableView)
         view.addSubview(errorLabel)
+        
         startAnimatingActivityIndicatorView()
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            errorLabel.heightAnchor.constraint(equalToConstant: view.frame.height),
+            errorLabel.widthAnchor.constraint(equalToConstant: view.frame.width),
         ])
         navigationItem.title = "Employee Directory"
     }
@@ -76,7 +81,8 @@ class DirectoryViewController: UIViewController {
     }
     
     //MARK - UI Methods
-    //Creating Activity Indicator
+    /* Activity indicator view functions; Running activity indicator while network is called to obtain data.
+     Stopping the activity indicator once the data is returned in the makeDirectoryNetowrkCall method. */
     private func startAnimatingActivityIndicatorView() {
         activityView = UIActivityIndicatorView(style: .large)
         activityView?.center = view.center
@@ -91,7 +97,8 @@ class DirectoryViewController: UIViewController {
         }
     }
     
-    /* If there is an 'error' in the network call and the data is malformed, or the data is Nil, this error label method will be called, it unhides the label created above and sets the appropriate text based on the error provided by the API. */
+    /* If there is an 'error' in the network call and the data is malformed, or the data is Nil, this error label method will be called,
+     it unhides the label created above and sets the appropriate text based on the error provided by the API. */
     private func setErrorLabelText(error: ErrorLabelText) {
         switch error {
         case .errorFetchingData:    self.errorLabel.text = error.text
