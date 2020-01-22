@@ -38,7 +38,8 @@ final class ImageLoader: API {
         }
         
         let imageTask = session.dataTask(with: url) { (data, httpResponse, error) in
-            /* Using a defer statment to remove the completed dataTask from the running requests. Once the dataTask completes, I don't need to keep it around in runningRequests. The defer statenent will fire once the successful completion is called below and the image is passed in. */
+            /* Using a defer statment to remove the completed dataTask from the running requests. Once the dataTask completes,
+             I don't need to keep it around in runningRequests. The defer statenent will fire once the successful completion is called below and the image is passed in. */
             
             defer { self.runningRequests.removeValue(forKey: uuid) }
             
@@ -50,7 +51,9 @@ final class ImageLoader: API {
             }
             
             guard let error = error else {
-                /* No Image, No Error, something went wrong. Passing Image Error to completion to be handled appropriately. I'm setting the image in 'PersonCell' to default to a SystemImage of a person. If I wasn't doing that I would use this 'noData' ImageError to set the appropriate image on the ImageView when I'm receiving this particular error. */
+                /* No Image, No Error, something went wrong. Passing Image Error to completion to be handled appropriately.
+                 I'm setting the image in 'PersonCell' to default to a SystemImage of a person. If I wasn't doing that I would use this 'noData' ImageError to set the appropriate image on the ImageView
+                 when I'm receiving this particular error. */
                 
                 completion(.failure(ImageError.noData))
                 return
@@ -63,7 +66,8 @@ final class ImageLoader: API {
         }
         imageTask.resume()
         
-        /* Store the dataTask in the runningRequests dictionary with the uuid provided by the server(this is passed in as a paramater in the 'loadImage(url: uuid: completion:)' function. This function returns the uuid as a string and is used in DirectoryViewController's viewDidLoad to cancel the image if/when the cell is being reloaded (when cancelLoad(urlString: uuid:) is called. */
+        /* Store the dataTask in the runningRequests dictionary with the uuid provided by the server(this is passed in as a paramater in the 'loadImage(url: uuid: completion:)' function.
+         This function returns the uuid as a string and is used in DirectoryViewController's viewDidLoad to cancel the image if/when the cell is being reloaded (when cancelLoad(urlString: uuid:) is called. */
         
         runningRequests[uuid] = imageTask
         return uuid

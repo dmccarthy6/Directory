@@ -6,8 +6,8 @@ import UIKit
 import Foundation
 
 /*
- - Utilized Protocol for the network calls to enable the protocol to be used to fetch any network data, not just the directory data for this project.
- - Using Generics for JSONDecoder & fetchNetworkData so these methods can be reused if/when this application expands it's scope.
+ - Utilized Protocol for the network calls to enable the protocol to be used anywhere in this project that will need to fetch network data from a URLRequest.
+ - Using Generics for JSONDecoder & fetchNetworkData so these methods can be applied to any network calls the application may expand to need.
  */
 
 protocol API {
