@@ -5,6 +5,11 @@
 import UIKit
 import Foundation
 
+/*
+ - Utilized Protocol for the network calls to enable
+ - Using Generics for JSONDecoder & fetchNetworkData so these methods can be reused if/when this application expands
+ */
+
 protocol API {
     var session: URLSession { get }
     
@@ -15,7 +20,7 @@ extension API {
     typealias JSONTaskCompletionHandler = (Decodable?, APIError?) -> Void
     
     //MARK: - Decode JSON
-    
+    /* This function is responsible for parsing/decoding JSON. I'm using a Generic that conforms to decodable here so that this function can be used with any decoable object if the project expands and we need to fetch data from a new API.*/
     private func decodeJSON<T: Decodable>(with request: URLRequest, decodingType: T.Type, completionHandler completion: @escaping JSONTaskCompletionHandler) -> URLSessionDataTask {
         
         let task = session.dataTask(with: request) { (data, urlResponse, error) in
@@ -25,24 +30,24 @@ extension API {
             }
             
             if httpResponse.statusCode == 200 {
-                //Success
+                /* Success from the server, parse the JSON accordingly. Passing Generic codable object to the completion handler. */
                 if let data = data {
                     do {
                         let model = try JSONDecoder().decode(decodingType, from: data)
                         completion(model, nil)
                     }
                     catch {
-                        //Failed to convert JSON
+                        /* If this is hit there was an error parsing or decoding the JSON. Passing that error from custom API Error. */
                         completion(nil, .jsonConversionFailure)
                     }
                 }
                 else {
-                    //Data is NIL
+                    /* If we hit here, the data is empty. Passing custom error to alert the user that there is no data. */
                     completion(nil, .handleNoData)
                 }
             }
             else {
-                //HTTP Response not 200
+                /* If we have hit this, there is a response other than 200 from the server. Passing HTTP error from custom API Error enum. */
                 completion(nil, .httpResponseUnsuccessful)
             }
         }
@@ -52,57 +57,24 @@ extension API {
     //MARK: - Fetch Data Implementation
     func fetchNetworkData<T: Decodable>(with request: URLRequest, decode: @escaping (Decodable) -> T?, completionHandler completion: @escaping ((Result<T, APIError>)) -> Void) {
         let task = decodeJSON(with: request, decodingType: T.self) { (JSON, APIError) in
-            //MAIN QUEUE
-            DispatchQueue.main.async {
-                guard let json = JSON else {
-                    if let apiError = APIError {
-                        completion(Result.failure(apiError))
-                    }
-                    else {
-                        completion(Result.failure(.jsonDataMalformed))
-                    }
-                    return
-                }
-                if let value = decode(json) {
-                    completion(.success(value))
+            guard let json = JSON else {
+                if let apiError = APIError {
+                    completion(Result.failure(apiError))
                 }
                 else {
-                    completion(.failure(.jsonParsingFailure))
+                    completion(Result.failure(.jsonDataMalformed))
                 }
+                return
+            }
+            if let value = decode(json) {
+                completion(.success(value))
+            }
+            else {
+                completion(.failure(.jsonParsingFailure))
             }
         }
         task.resume()
     }
-    
-    //Async Image Functions
-    func getImageData(from url: URL, completion: @escaping (Result<Data?, APIError>) -> Void) {
-        let imageTask = session.dataTask(with: url) { (imageData, response, error) in
-            if let _ = error {
-                completion(.failure(.httpRequestFailed))
-                return
-            }
-            guard let imageData = imageData else {
-                completion(.failure(.jsonDataMalformed))
-                return
-            }
-            completion(.success(imageData))
-        }
-        imageTask.resume()
-    }
-    
-    func asyncImageFrom(data: Data, _ completion: @escaping (Result<UIImage, APIError>) -> Void) {
-        DispatchQueue.global().async {
-            if let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    completion(.success(image))
-                }
-            }
-            else {
-                completion(.failure(APIError.jsonDataMalformed))
-            }
-        }
-    }
-    
     
 }
 

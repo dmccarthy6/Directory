@@ -22,7 +22,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        let rootVC = FullDirectoryViewController()
+        let rootVC = DirectoryViewController()
         let navController = UINavigationController(rootViewController: rootVC)
         navController.navigationBar.prefersLargeTitles = true
         

@@ -6,7 +6,12 @@
 import Foundation
 import UIKit
 
-final class ModelController {
+/*
+ - Perform database queries and pass data to the ViewController through completions.
+ - Contain the tableView dataSource property(directoryData) that is being set in this class with the 'getDirectoryEmployees' method, sorting data here by 'team'
+ */
+
+final class ModelController: API {
     
     //MARK: - Properties
     private (set) var directoryData = [Contact]() {
@@ -15,8 +20,8 @@ final class ModelController {
         }
     }
     var session: URLSession
-    private let directory = GetDirectoryData()
     private let imageLoader = ImageLoader()
+    
     
     
     //MARK: - Initializers
@@ -26,69 +31,52 @@ final class ModelController {
     
     
     //MARK: - Network Functions
-    func getNetowrkData(completion: @escaping (APIError?) -> Void) {
-        let dispatchGroup = DispatchGroup()
-        var error: APIError?
-        
-        dispatchGroup.enter()
-        
-        fetchDirectoryNames { (results) in
-            switch results {
-            case .success(let employeeResults):
-                if let employeeResult = employeeResults {
-                    self.directoryData = employeeResult.employees!
-                }
+    /* */
+    func getDirectoryEmployees(from url: DirectoryURL, completion: @escaping (APIError?) -> Void) {
+        fetchEmployeesFromNetwork(from: url) { (result) in
+            switch result {
             case .failure(let apiError):
-                error = apiError
                 completion(apiError)
-            }
-            dispatchGroup.leave()
-        }
-        dispatchGroup.notify(queue: .main) {
-            if self.directoryData.count > 0 {
-                completion(nil)
-            }
-            else {
-                completion(error)
+                
+            case .success(let employees):
+                if let employeesArray = employees, let contacts = employeesArray.employees {
+                    self.directoryData = contacts
+                    completion(nil)
+                }
             }
         }
     }
     
-    func loadImageFor(cell: UITableViewCell, url: URL, uuid: String, completion: @escaping (APIError?) -> Void) -> String? {
+    /* Using the ImageLoader to fetch images to be displayed in the tableView. This method is called in */
+    func loadImageFor(url: URL, uuid: String, completion: @escaping (UIImage?, APIError?) -> Void) -> String? {
         let token = imageLoader.loadImage(url, uuid: uuid) { (results) in
             do {
                 let image = try results.get()
-                DispatchQueue.main.async {
-                    if let cell = cell as? PersonCell {
-                        cell.setImage(image)
-                    }
-                }
+                completion(image, nil)
             }
             catch {
-                completion(.imageFailedToLoad)
+                completion(nil, .imageFailedToLoad)
             }
         }
         return token
     }
-
-    func fetchContactFor(row: Int) -> Contact {
-        return directoryData[row]
+    
+    /* Cancel the load image*/
+    func cancelImageLoad(token: String, uuid: String) {
+        imageLoader.cancelLoad(for: token, uuid: uuid)
+    }
+    
+    /* Created this method to be used in the DirectoryViewController to obtain the data for a tapped cell. */
+    func fetchContactFor(indexPath: IndexPath) -> Contact {
+        return directoryData[indexPath.row]
     }
     
     //MARK: - Private methods
-    /*Change 'from' value in fetchDirectoryNames to .empty or .malformed to test errors */
-    private func fetchDirectoryNames(completion: @escaping (Result<EmployeesResult?, APIError>) -> Void) {
-        directory.fetchDirectoryNames(from: .validData) { (result) in
-            switch result {
-            case .failure(let error):
-                completion(.failure(error))
-                
-            case .success(let allEmployees):
-                if let employeesArray = allEmployees {
-                    completion(.success(employeesArray))
-                }
-            }
-        }
+    func fetchEmployeesFromNetwork(from url: DirectoryURL, completion: @escaping (Result<EmployeesResult?, APIError>) -> Void) {
+        fetchNetworkData(with: url.urlRequest, decode: { (json) -> EmployeesResult? in
+            guard let employeesArray = json as? EmployeesResult else { return nil }
+            return employeesArray
+        }, completionHandler: completion)
     }
     
     

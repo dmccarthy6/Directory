@@ -9,8 +9,8 @@
 import Foundation
 @testable import SquareDirectory
 
-class MockURLSession: URLSession {
-    
+class MockURLSession: URLSession, API {
+    var session = URLSession(configuration: .ephemeral)//THIS IS NOT USED
     var nextDataTask = MockDataTask()
     var nextData: Data?
     var nextError: Error?

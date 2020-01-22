@@ -10,13 +10,12 @@ import XCTest
 @testable import SquareDirectory
 
 class SquareDirectoryTests: XCTestCase {
-    var directory: GetDirectoryData!
     let session = MockURLSession()
     
     
     
     override func setUp() {
-        directory = GetDirectoryData(session: session)
+        
     }
 
     

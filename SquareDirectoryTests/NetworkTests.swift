@@ -1,7 +1,4 @@
-//
-//  APITests.swift
-//  SquareDirectoryTests
-//
+
 //  Created by Dylan  on 1/19/20.
 //  Copyright © 2020 Dylan . All rights reserved.
 //
@@ -11,106 +8,63 @@ import XCTest
 
 class NetworkTests: XCTestCase {
     //MARK: Properties
-    var getDirectoryData: GetDirectoryData!
     let session = MockURLSession()
-    
+    var modelController: ModelController?
     
     
     override func setUp() {
         super.setUp()
         
-        getDirectoryData = GetDirectoryData(session: session)
+        //Passing 'mock' URLSession created in Test Suite to test the modelController networking functions. I can use 'modelController' safely here now as it's not using the real URLSession.
+        modelController = ModelController(session: session)
     }
     
     
-    /* Test that the URL Session creates the request with the correct url*/
+    /* Test that the URL Session creates the request with the correct url. */
     func testWithURL() {
         let directoryURL = DirectoryURL.validData
         
-        getDirectoryData.fetchDirectoryNames(from: directoryURL) { (result) in
-            print(result)
-        }
+        modelController?.getDirectoryEmployees(from: directoryURL, completion: { (result) in
+        })
         XCTAssert(session.lastURL == directoryURL.urlComponents.url)
     }
     
-    /* Test that the URLSession 'resume' is correctly called*/
+    /* Test that the URLSession 'resume' is correctly called as expected. */
     func testResumeWasCalled() {
         let dataTask = MockDataTask()
         session.nextDataTask = dataTask
         
-        getDirectoryData.fetchDirectoryNames(from: .validData) { (result) in
-            print(result)
-        }
+        modelController?.getDirectoryEmployees(from: .validData, completion: { (error) in
+        })
         XCTAssert(dataTask.resumeWasCalled)
     }
     
-    /* */
-    func testGettingData() {
-        var employeeResultData: EmployeesResult?
-        
-        getDirectoryData.fetchDirectoryNames(from: .validData) { (result) in
-            switch result {
-            case .success(let employeeResult):
-                employeeResultData = employeeResult
-                
-            case .failure(let apiError):
-                print("ERROR TESTS: \(apiError)")
-            }
-        }
-        XCTAssertNil(employeeResultData)
-    }
-    
-    func testFetchData() {
-        let validDataExpectation = expectation(description: "Check Valid Directory")
-        let url = DirectoryURL.validData.urlComponents.url
-        URLProtocolMock.testURLs = [url : Data("Data is valid".utf8)]
-        let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [URLProtocolMock.self]
-        let session = URLSession(configuration: config)
-        typealias completionHandler = (EmployeesResult, APIError) -> Void
-        
-        let directory = GetDirectoryData(session: session)
-       
-        directory.fetchNetworkData(with: DirectoryURL.validData.urlRequest, decode: { (json) -> EmployeesResult? in
-            if let employeeJson = json as? EmployeesResult {
-                print("HIT JSON VALID IN TEST")
-                XCTAssertNotNil(employeeJson)
-                return employeeJson
-            }
-            validDataExpectation.fulfill()
-            return nil
-            
-        }) { (result) in
-            print(result)
-        }
-    }
-    
-    /* Test that nil error is firing correctly on empty data endpoint*/
+    /* Testing that the correct error is passed if there is empty data. */
     func testDirectoryNilDataError() {
         let nilAPIError = APIError.jsonDataMalformed
         var errorNil: APIError?
         
-        getDirectoryData.fetchDirectoryNames(from: .empty) { (result) in
-            switch result {
-            case .success(let data):
-                if let _ = data {
-                }
-            case .failure(let error):
+        modelController?.getDirectoryEmployees(from: .empty, completion: { (error) in
+            if let error = error {
                 errorNil = error
             }
-        }
+        })
         XCTAssertNotEqual(nilAPIError, errorNil)
     }
     
+  
+    
+    
+    
     //MARK: - Live Network Tests(if desired)
-    /* These Unit tests hit the network, use to determine if there are any undocumented API changes. */
+    /* These Unit tests hit the network, use to determine if there are any undocumented API changes. Commenting this out as I don't want the tests continually hitting the network. */
     
 //    func testDirectoryWithValidData() {
-//        let directoryLive = GetDirectoryData(session: URLSession(configuration: .default))
+//        let directoryLive = ModelController(session: URLSession(configuration: .default))
 //        let expectation = self.expectation(description: "DirectoryValid")
 //        var contactsArray: [Contact]?
 //
-//        directoryLive.fetchDirectoryNames(from: .validData) { (result) in
+//        directoryLive.fetchEmployeesFromNetwork(from: .validData) { (result) in
 //            switch result {
 //            case .success(let data):
 //                if let employees = data {
@@ -130,6 +84,6 @@ class NetworkTests: XCTestCase {
     //MARK: - Teardown
     override func tearDown() {
         super.tearDown()
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    
 }
